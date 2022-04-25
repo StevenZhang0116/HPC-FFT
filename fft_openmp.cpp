@@ -50,7 +50,7 @@ void step (int n, int mj, double a[], double b[], double c[], double d[], double
 // copy function
 void ccopy (int n, double x[], double y[]){
   for (int i = 0; i < n; i++){
-    y[i*2+0] = x[i*2+0];
+    y[i*2] = x[i*2];
     y[i*2+1] = x[i*2+1];
    }
   return;
@@ -118,12 +118,14 @@ int main (){
   int ind; int indmax = 26;
   int n = 1;
   int nits = 10000;
-  static double seed = 129;
-  double sgn; double *w; double wtime; 
+  static double seed = rand() % 100 + 100;
+  double *w; double wtime; 
   double *x; double *y; double *z;
   double z0; double z1;
+  double sgn;
 
-  int thread_num = 4;
+  // cims server cuda1 test
+  int thread_num = 8;
 
   cout << "  ====OPENMP VERSION OF FFT====" << endl;
   cout << "  Number of processors available = " << omp_get_num_procs () << "\n";
@@ -144,33 +146,27 @@ int main (){
     for (int icase = 0; icase < 2; icase++){
       if (firstind){
         for (int i = 0; i < 2 * n; i += 2){
-          z0 = randomizer(&seed);
-          z1 = randomizer(&seed);
-          x[i] = z0;
-          z[i] = z0;
-          x[i+1] = z1;
-          z[i+1] = z1;
+          z0 = randomizer(&seed); z1 = randomizer(&seed);
+          x[i] = z0; z[i] = z0;
+          x[i+1] = z1; z[i+1] = z1;
         }
       } 
       else{
       # pragma omp parallel shared(n, x, z) private(z0, z1)
       # pragma omp for nowait
         for (int i = 0; i < 2 * n; i += 2){
-          z0 = 0.0;
-          z1 = 0.0;
-          x[i] = z0;
-          z[i] = z0;
-          x[i+1] = z1;
-          z[i+1] = z1;
+          z0 = 0.0; z1 = 0.0;
+          x[i] = z0; z[i] = z0;
+          x[i+1] = z1; z[i+1] = z1;
         }
       }
 
       sincosine(n, w);
 
       if (firstind){
-        sgn = + 1.0;
+        sgn = +1.0;
         cfft2 (n, x, y, w, sgn);
-        sgn = - 1.0;
+        sgn = -1.0;
         cfft2 (n, y, x, w, sgn);
 
         double fnm1 = 1.0 / (double) n;
@@ -185,9 +181,9 @@ int main (){
       else{
         wtime = omp_get_wtime();
         for (int it = 0; it < nits; it++){
-          sgn = + 1.0;
+          sgn = +1.0;
           cfft2 (n, x, y, w, sgn);
-          sgn = - 1.0;
+          sgn = -1.0;
           cfft2 (n, y, x, w, sgn);
         }
         wtime = omp_get_wtime() - wtime;
