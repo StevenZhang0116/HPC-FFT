@@ -101,7 +101,6 @@ void sincosine (int n, double w[]){
   return;
 }
 
-
 // Generate uniformly distributed pseudorandom numbers
 // Reference: https://stackoverflow.com/questions/18131612/how-to-generate-random-double-numbers-with-high-precision-in-c
 double randomizer (double *seed){
@@ -112,7 +111,6 @@ double randomizer (double *seed){
   double value = (double) ((t - 1.0)/(d2 - 1.0));
   return value;
 }
-
 
 
 // main function
