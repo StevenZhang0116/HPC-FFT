@@ -9,8 +9,8 @@
 # include <iomanip>
 # include <ctime>
 # include <omp.h>
-using namespace std;
 
+using namespace std;
 
 // step function, use the logic/parameters presented on p151 in Petersen's book
 void step (int n, int mj, double a[], double b[], double c[], double d[], double w[], double sgn){
