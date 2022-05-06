@@ -1,5 +1,7 @@
 // nvcc -lcufft fft_stockham.cu && ./a.out
 
+// High Performance Discrete Fourier Transforms on Graphics Processors
+
 #include <stdlib.h>
 #include <iostream>
 #include <stdio.h>
@@ -13,8 +15,6 @@
 using namespace std;
 
 #define DEBUG 1
-
-int CHECK_SUM = 0;
 
 #define INPUT_SIZE (1 << 24)
 
@@ -172,7 +172,7 @@ int get_T(int x)
 {
     int i = 1;
     int a = R;
-    while(a < x)
+    while (a < x)
     {
         a *= R;
         i++;
