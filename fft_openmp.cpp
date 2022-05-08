@@ -16,7 +16,8 @@
 #include <unistd.h>
 using namespace std;
 
-// step function, use the logic/parameters presented on p151 in Petersen's book
+// carries out one step of the workspace version of cfft2
+// use the logic/parameters presented on p151 in Petersen's book
 void step (int n, int mj, double a[], double b[], double c[], double d[], double w[], double sgn){
   double ambr, ambu;
   int ja, jb, jc, jd, jw;
@@ -53,6 +54,8 @@ void step (int n, int mj, double a[], double b[], double c[], double d[], double
 }
 
 // copy function
+// the complex vector A[N] is actually stored as a double vector B[2*N]
+// B[I*2+0] is the real part, while B[I*2+1] is the imaginary part
 void ccopy (int n, double x[], double y[]){
   for (int i = 0; i < n; i++){
     y[i*2] = x[i*2];
@@ -62,6 +65,11 @@ void ccopy (int n, double x[], double y[]){
 }
 
 // performs complex FFT, use the logic/parameters presented on p128 in Petersen's book
+// input: n: size of array to be transformed
+// input/output: X[2*N]: transformed data. the contents of X have been overwritten by work information.
+// output: Y[2*N]: the forward or backward FFT of X
+// input: w[N]: a table of sines and cosines
+// input: sgn: +1 for forward and -1 for backward
 void cfft2 (int n, double x[], double y[], double w[], double sgn){
   int m = (int)(log((double) n) / log(1.99));
   int mj = 1;
@@ -89,6 +97,10 @@ void cfft2 (int n, double x[], double y[], double w[], double sgn){
 
   return;
 }
+
+
+
+
 
 // Sets up sine and cosine table for complex FFT
 void sincosine (int n, double w[]){
@@ -134,7 +146,7 @@ int main (){
   char hostname[50];
   rc = gethostname(hostname,sizeof(hostname));
 
-  int thread_num = 16;
+  int thread_num = 4;
   string dataname = string(hostname)+"-"+to_string(thread_num)+".txt";
   cout << dataname << endl;
 
