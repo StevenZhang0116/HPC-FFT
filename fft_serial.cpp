@@ -1,7 +1,8 @@
 // Reference: Wesley Petersen and Peter Arbenz. “Introduction to parallel computing. A practical
 // guide with examples in C”. In: (Jan. 2004)
 
-// Complex binary radix (n = 2^m) FFT in OpenMP Version.
+// Complex binary radix (n = 2^m) FFT in Serial Version.
+// Simply delete the openmp part of code from fft_openmp.cpp; rests are very similar
 
 # include <cmath>
 # include <cstdlib>
@@ -13,11 +14,9 @@
 # include <string>
 # include <vector>
 # include <iterator>
-#include <unistd.h>
 using namespace std;
 
-// carries out one step of the workspace version of cfft2
-// use the logic/parameters presented on p151 in Petersen's book
+// step function, use the logic/parameters presented on p151 in Petersen's book
 void step (int n, int mj, double a[], double b[], double c[], double d[], double w[], double sgn){
   double ambr, ambu;
   int ja, jb, jc, jd, jw;
@@ -25,8 +24,6 @@ void step (int n, int mj, double a[], double b[], double c[], double d[], double
   int mj2 = 2 * mj;
   int lj = n / mj2;
 
-  # pragma omp parallel shared (a, b, c, d, lj, mj, mj2, sgn, w) private (ambr, ambu, ja, jb, jc, jd, jw, wjw)
-  # pragma omp for nowait
   for (int j = 0; j < lj; j++){
     jw = j * mj;
     ja = jw;
@@ -54,8 +51,6 @@ void step (int n, int mj, double a[], double b[], double c[], double d[], double
 }
 
 // copy function
-// the complex vector A[N] is actually stored as a double vector B[2*N]
-// B[I*2+0] is the real part, while B[I*2+1] is the imaginary part
 void ccopy (int n, double x[], double y[]){
   for (int i = 0; i < n; i++){
     y[i*2] = x[i*2];
@@ -65,11 +60,6 @@ void ccopy (int n, double x[], double y[]){
 }
 
 // performs complex FFT, use the logic/parameters presented on p128 in Petersen's book
-// input: n: size of array to be transformed
-// input/output: X[2*N]: transformed data. the contents of X have been overwritten by work information.
-// output: Y[2*N]: the forward or backward FFT of X
-// input: w[N]: a table of sines and cosines
-// input: sgn: +1 for forward and -1 for backward
 void cfft2 (int n, double x[], double y[], double w[], double sgn){
   int m = (int)(log((double) n) / log(1.99));
   int mj = 1;
@@ -98,18 +88,12 @@ void cfft2 (int n, double x[], double y[], double w[], double sgn){
   return;
 }
 
-
-
-
-
 // Sets up sine and cosine table for complex FFT
 void sincosine (int n, double w[]){
   double arg;
   const double pi = 3.14159265;
   double aw = 2.0*pi/((double)n);
 
-  # pragma omp parallel shared(aw,n,w) private (arg)
-  # pragma omp for nowait
   for (int i = 0; i < int(n/2); i++){
     arg = aw * ((double)i);
     w[i*2+0] = cos(arg);
@@ -129,6 +113,11 @@ double randomizer (double *seed){
   return value;
 }
 
+double cpu_time(void){
+    double value = (double) clock() / (double) CLOCKS_PER_SEC;
+    return value;
+}
+
 
 // main function
 int main (){
@@ -136,23 +125,19 @@ int main (){
   int n = 1;
   int nits = 10000;
   static double seed = rand() % 100 + 100;
-  double *w; double wtime; double wtime1; double wtime2;
+  double *w; double wtime1; double wtime2; double wtime; 
   double *x; double *y; double *z;
   double z0; double z1;
   double sgn;
 
-  // get hostname of the server
-  int rc;
-  char hostname[50];
-  rc = gethostname(hostname,sizeof(hostname));
+  int thread_num = 1;
 
-  int thread_num = 4;
-  string dataname = string(hostname)+"-"+to_string(thread_num)+".txt";
+  string dataname = "serial-data-"+to_string(thread_num)+".txt";
   cout << dataname << endl;
 
   ofstream myfile(dataname);
 
-  cout << "  ====OPENMP VERSION OF FFT====" << endl;
+  cout << "  ====SERIAL VERSION OF FFT====" << endl;
   cout << "  Number of processors available = " << omp_get_num_procs () << "\n";
   cout << "  Number of threads = " << omp_get_max_threads () << "\n";
   omp_set_num_threads(thread_num);
@@ -181,8 +166,6 @@ int main (){
         }
       } 
       else{
-      # pragma omp parallel shared(n, x, z) private(z0, z1)
-      # pragma omp for nowait
         for (int i = 0; i < 2 * n; i += 2){
           z0 = 0.0; z1 = 0.0;
           x[i] = z0; z[i] = z0;
@@ -191,6 +174,7 @@ int main (){
       }
 
       sincosine(n, w);
+
       if (firstind){
         sgn = +1.0;
         cfft2 (n, x, y, w, sgn);
@@ -205,10 +189,8 @@ int main (){
         error = sqrt(fnm1 * error);
         cout << "  " << setw(12) << n << "  " << setw(8) << nits << "  " << setw(12) << error;
         firstind = 0;
-	      // save dimension number
-	      vec_n.push_back(n);
+        vec_n.push_back(n);
       }
-
       else{
         wtime1 = omp_get_wtime();
         for (int it = 0; it < nits; it++){
@@ -223,8 +205,6 @@ int main (){
         double mflops = flops / 1.0E+06 / wtime;
 
         cout << "  " << setw(12) << wtime << "  " << setw(12) << wtime / (double)(2 * nits) << setw(10) << mflops << "\n";
-
-        // save running time and mflops
         vec_time.push_back(wtime);
         vec_mflop.push_back(mflops);
       }
