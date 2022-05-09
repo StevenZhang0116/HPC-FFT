@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <complex>
+#include "fft_openmp.cpp"
 using namespace std;
 
 template <typename T>
@@ -47,6 +48,10 @@ complex<T> *_fft(T eta, long N, T a, T S_0, T mu, T sigma, T t)
         final_terms[i] = eta * exp<T>(1j * b * eta * i) * fourier_transform_of_c_T(eta * i, a, S_0, mu, sigma, t) * arr[i] / 3.0;
     }
 
+    T w[N / 2];
+    T y[N];
+
+    // cfft2 (N / 2, x, y, w, sgn)
     // np.real(fft.fft(final_terms))
     return NULL;
 }
