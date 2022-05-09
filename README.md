@@ -2,6 +2,12 @@
 
 This repository serves for the final report for MATH-GA 2012 High Performance Computing in Spring 2022 instructed by Professor Benjamin Peherstorfer, NYU CIMS.
 
+To run, just: 
+```
+make all
+./fft_openmp
+```
+
 Detailed description of files:
 
 **fft_openmp.cpp**: OpenMP implementation of FFT
