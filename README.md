@@ -11,3 +11,5 @@ Detailed description of files:
 **analyze_result.py**: Analyze the results (running time/MFLOPS) for OpenMP/serial trails
 
 **fft_stockham.cu**: CUDA Version of FFT
+
+**option_pricing_with_fft.cpp**: FFT Application in option pricing
