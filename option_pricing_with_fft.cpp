@@ -48,12 +48,24 @@ complex<T> *_fft(T eta, long N, T a, T S_0, T mu, T sigma, T t)
         final_terms[i] = eta * exp<T>(1j * b * eta * i) * fourier_transform_of_c_T(eta * i, a, S_0, mu, sigma, t) * arr[i] / 3.0;
     }
 
-    T w[N / 2];
-    T y[N];
+    T w[N];
+    T x[2 * N];
+    T y[2 * N];
+    T result[N];
+    for (long i = 0; i < N; i++)
+    {
+        x[2 * i] = final_terms[i].x;
+        x[2 * i + 1] = final_terms[i].y;
+    }
 
-    // cfft2 (N / 2, x, y, w, sgn)
-    // np.real(fft.fft(final_terms))
-    return NULL;
+
+    cfft2 (N, x, y, w, 1);
+    for (long i = 0; i < N; i++)
+    {
+        result[i] = y[2 * i];
+    }
+
+    return result;
 }
 
 template <typename T>
