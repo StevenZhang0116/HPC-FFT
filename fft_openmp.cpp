@@ -2,6 +2,7 @@
 // guide with examples in C”. In: (Jan. 2004)
 
 // Complex binary radix (n = 2^m) FFT in OpenMP Version.
+// Radix-2 Version
 
 # include <cmath>
 # include <cstdlib>
@@ -97,9 +98,6 @@ void cfft2 (int n, double x[], double y[], double w[], double sgn){
 
   return;
 }
-
-
-
 
 
 // Sets up sine and cosine table for complex FFT
